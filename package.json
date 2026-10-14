@@ -4,20 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run db:migrate",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "tsx scripts/migrate.mts",
-    "index:leaderboards": "tsx scripts/index-leaderboards.mts",
-    "index:events": "tsx scripts/index-events.mts",
-    "index:wallets": "tsx scripts/index-wallets.mts",
-    "poll:trades": "tsx scripts/poll-trades.mts",
-    "verify:onchain": "tsx scripts/verify-onchain.mts",
-    "db:refresh": "tsx scripts/refresh.mts",
-    "pipeline:worker": "tsx scripts/pipeline.mts worker",
-    "pipeline:health": "tsx scripts/pipeline.mts health",
-    "pipeline:schedules": "tsx scripts/pipeline.mts schedules",
-    "pipeline:e2e": "tsx scripts/pipeline-e2e.mts"
+    "db:migrate": "npx tsx scripts/migrate.mts",
+    "db:verify": "npx tsx scripts/verify-schema.mts",
+    "index:leaderboards": "npx tsx scripts/index-leaderboards.mts",
+    "index:events": "npx tsx scripts/index-events.mts",
+    "index:wallets": "npx tsx scripts/index-wallets.mts",
+    "poll:trades": "npx tsx scripts/poll-trades.mts",
+    "verify:onchain": "npx tsx scripts/verify-onchain.mts",
+    "db:refresh": "npx tsx scripts/refresh.mts",
+    "pipeline:worker": "npx tsx scripts/pipeline.mts worker",
+    "pipeline:health": "npx tsx scripts/pipeline.mts health",
+    "pipeline:schedules": "npx tsx scripts/pipeline.mts schedules",
+    "pipeline:e2e": "npx tsx scripts/pipeline-e2e.mts"
   },
   "dependencies": {
     "@temporalio/activity": "^1.24.0",
@@ -30,7 +32,8 @@
     "next": "16.4.0",
     "postgres": "^3.4.9",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -41,7 +44,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
-    "tsx": "^4.23.15",
     "typescript": "^5"
   },
   "license": "MIT"
