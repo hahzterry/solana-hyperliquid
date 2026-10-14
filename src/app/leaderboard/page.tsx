@@ -6,6 +6,8 @@ import { duration, money, pct, pnlClass, short } from "@/lib/format";
 import { Avatar } from "@/components/Avatar";
 import { WinBar } from "@/components/WinBar";
 
+export const dynamic = "force-dynamic";
+
 const COLS: { k: Sort | null; label: string }[] = [
   { k: "pnl", label: "PnL" },
   { k: "roi", label: "ROI" },
@@ -16,13 +18,26 @@ const COLS: { k: Sort | null; label: string }[] = [
   { k: null, label: "Hold time" },
 ];
 
-export default function LeaderboardPage({ searchParams }: PageProps<"/leaderboard">) {
+type LeaderboardSearchParams = Promise<{
+  category?: string | string[];
+  period?: string | string[];
+  sort?: string | string[];
+  q?: string | string[];
+}>;
+
+export default async function LeaderboardPage({
+  searchParams,
+}: {
+  searchParams: LeaderboardSearchParams;
+}) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Leaderboard</h1>
-          <p className="mt-1 text-sm text-muted">Top Solana prediction traders, ranked by realized PnL. Every category has its own board.</p>
+          <p className="mt-1 text-sm text-muted">
+            Top Solana prediction traders, ranked by realized PnL. Every category has its own board.
+          </p>
         </div>
         <Suspense fallback={<div className="skeleton h-6 w-72" />}>
           <HeaderStats />
@@ -53,7 +68,7 @@ async function HeaderStats() {
   );
 }
 
-async function Board({ searchParams }: { searchParams: PageProps<"/leaderboard">["searchParams"] }) {
+async function Board({ searchParams }: { searchParams: LeaderboardSearchParams }) {
   await connection();
   const sp = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -62,10 +77,15 @@ async function Board({ searchParams }: { searchParams: PageProps<"/leaderboard">
   const sort = (COLS.find((c) => c.k === one(sp.sort))?.k ?? "pnl") as Sort;
   const q = one(sp.q)?.trim() || undefined;
 
-  const [cats, rows] = await Promise.all([categories(period), leaderboard({ category, period, sort, q })]);
+  const [cats, rows] = await Promise.all([
+    categories(period),
+    leaderboard({ category, period, sort, q }),
+  ]);
+
   const href = (o: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ category, period, sort, q, ...o })) if (v && !(k === "category" && v === "All")) p.set(k, v);
+    for (const [k, v] of Object.entries({ category, period, sort, q, ...o }))
+      if (v && !(k === "category" && v === "All")) p.set(k, v);
     return `/leaderboard?${p}`;
   };
 
@@ -76,14 +96,22 @@ async function Board({ searchParams }: { searchParams: PageProps<"/leaderboard">
           All categories
         </Link>
         {cats.map((c) => (
-          <Link key={c.category} href={href({ category: c.category })} className="pill" data-active={category === c.category}>
+          <Link
+            key={c.category}
+            href={href({ category: c.category })}
+            className="pill"
+            data-active={category === c.category}
+          >
             {c.category} <span className="num text-[11px] opacity-60">{c.traders}</span>
           </Link>
         ))}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <form action="/leaderboard" className="flex min-w-[260px] flex-1 items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 focus-within:border-violet">
+        <form
+          action="/leaderboard"
+          className="flex min-w-[260px] flex-1 items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 focus-within:border-violet"
+        >
           {category !== "All" && <input type="hidden" name="category" value={category} />}
           <input type="hidden" name="period" value={period} />
           <input type="hidden" name="sort" value={sort} />
@@ -91,11 +119,23 @@ async function Board({ searchParams }: { searchParams: PageProps<"/leaderboard">
             <circle cx="9" cy="9" r="6" />
             <path d="M14 14l4 4" />
           </svg>
-          <input name="q" defaultValue={q} placeholder="Search by wallet address" spellCheck={false} className="num w-full bg-transparent text-sm outline-none placeholder:text-dim" />
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Search by wallet address"
+            spellCheck={false}
+            className="num w-full bg-transparent text-sm outline-none placeholder:text-dim"
+          />
         </form>
         <div className="flex rounded-lg border border-line p-0.5">
           {PERIODS.map((p) => (
-            <Link key={p.k} href={href({ period: p.k })} className={`num rounded-md px-2.5 py-1 text-xs ${period === p.k ? "bg-panel-2 text-text" : "text-muted hover:text-text"}`}>
+            <Link
+              key={p.k}
+              href={href({ period: p.k })}
+              className={`num rounded-md px-2.5 py-1 text-xs ${
+                period === p.k ? "bg-panel-2 text-text" : "text-muted hover:text-text"
+              }`}
+            >
               {p.label}
             </Link>
           ))}
@@ -143,7 +183,11 @@ async function Board({ searchParams }: { searchParams: PageProps<"/leaderboard">
                   {r.profit_factor === null ? (
                     <span className="text-dim">–</span>
                   ) : (
-                    <span className={`num rounded-md px-2 py-0.5 text-xs ${r.profit_factor >= 1 ? "bg-[#0f2a20] text-up" : "bg-[#2a1216] text-down"}`}>
+                    <span
+                      className={`num rounded-md px-2 py-0.5 text-xs ${
+                        r.profit_factor >= 1 ? "bg-[#0f2a20] text-up" : "bg-[#2a1216] text-down"
+                      }`}
+                    >
                       {r.profit_factor >= 100 ? "100" : r.profit_factor.toFixed(2)}
                     </span>
                   )}
@@ -163,8 +207,8 @@ async function Board({ searchParams }: { searchParams: PageProps<"/leaderboard">
         </table>
       </div>
       <p className="text-xs text-dim">
-        PnL, ROI, win rate and profit factor use positions closed in the period. ROI, win rate and profit factor rankings need 5+ positions. Volume = USDC spent on
-        buys.
+        PnL, ROI, win rate and profit factor use positions closed in the period. ROI, win rate and profit
+        factor rankings need 5+ positions. Volume = USDC spent on buys.
       </p>
     </div>
   );
