@@ -6,8 +6,6 @@ import { duration, money, pct, pnlClass, short } from "@/lib/format";
 import { Avatar } from "@/components/Avatar";
 import { WinBar } from "@/components/WinBar";
 
-export const dynamic = "force-dynamic";
-
 const COLS: { k: Sort | null; label: string }[] = [
   { k: "pnl", label: "PnL" },
   { k: "roi", label: "ROI" },
@@ -25,7 +23,7 @@ type LeaderboardSearchParams = Promise<{
   q?: string | string[];
 }>;
 
-export default async function LeaderboardPage({
+export default function LeaderboardPage({
   searchParams,
 }: {
   searchParams: LeaderboardSearchParams;
